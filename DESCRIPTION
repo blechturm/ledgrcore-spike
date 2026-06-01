@@ -1,0 +1,25 @@
+Package: ledgrcorespike
+Type: Package
+Title: Compiled Fold Core Measurement Spike For ledgr
+Version: 0.0.0.9000
+Authors@R:
+    person("Max", "Thomasberger", role = c("aut", "cre"),
+           email = "max.thomasberger@gmail.com")
+Description: Research spike measuring two compiled fold cores (Rust via
+    extendr, C++ via cpp11) against post-v0.1.8.10 production R per
+    ledgr's K1 horizon entry. Produces per-pulse and per-fill cost
+    measurements with R callback boundary and inline static boundary
+    variants. Not a production package; not intended for CRAN. May
+    graduate to `ledgrcore` if the spike concludes "build authorized".
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.5.0)
+LinkingTo: cpp11
+SystemRequirements: Cargo (Rust toolchain), C++17
+Imports:
+Suggests:
+    testthat (>= 3.0.0),
+    bench
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2

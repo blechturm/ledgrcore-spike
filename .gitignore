@@ -1,0 +1,26 @@
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rcheck/
+*.tar.gz
+
+# Rust
+src-rust/target/
+src-rust/Cargo.lock
+
+# C++
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Outputs
+dev/bench/results/*.csv
+!dev/bench/results/.gitkeep

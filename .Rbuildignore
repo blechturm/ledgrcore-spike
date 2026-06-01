@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^inst/design$
+^dev$
+^src-rust$
+^\.github$
+^CLAUDE\.md$
+^AGENTS\.md$
+^README\.Rmd$
+^.*\.gitkeep$

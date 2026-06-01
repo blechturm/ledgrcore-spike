@@ -1,0 +1,12 @@
+[package]
+name = "ledgrcorespike_rust"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["staticlib"]
+name = "ledgrcorespike_rust"
+
+[dependencies]
+extendr-api = "0.7"
