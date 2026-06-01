@@ -74,3 +74,74 @@ seed `20260601` for run ordering and any future fixture randomness.
 
 Rationale: Closed-form prices avoid cross-language RNG drift while still
 exercising the fold, accounting, and boundary costs the spike measures.
+
+## 2026-06-01 - K1 deterministic wave formula
+
+Question: What exact closed-form price perturbation should all three
+implementations use for deterministic fixture bars?
+
+Alternatives considered: leave `deterministic_wave()` abstract; use
+transcendental functions such as sine/cosine; use integer modular arithmetic
+with one final floating-point division.
+
+Choice: define `deterministic_wave(i, t)` as
+`((i * 7919 + t * 6311) mod 10000) / 100000.0`, using one-based indices and
+64-bit integer intermediates.
+
+Rationale: Integer modular arithmetic avoids cross-language libm drift and
+gives R, Rust, and C++ a byte-stable fixture target.
+
+## 2026-06-01 - K1 fractional fill quantities
+
+Question: Should rebalance target quantities be rounded to whole shares?
+
+Alternatives considered: floor, nearest integer, banker's rounding, or
+fractional shares with no rounding.
+
+Choice: use fractional double quantities with no integer share rounding.
+
+Rationale: Fractional quantities match ledgr's production allowance for
+fractional positions and remove cross-language rounding-rule ambiguity.
+
+## 2026-06-01 - K1 bars-matrix lifecycle
+
+Question: When should the synthetic bars matrix be generated for timing runs?
+
+Alternatives considered: generate once per rep, once per timing cell, or once
+per `(scale, run_date)` tuple.
+
+Choice: generate once per `(scale, run_date)` tuple and reuse the same matrix
+across all reps and all boundary/implementation cells at that scale.
+
+Rationale: Reusing the matrix keeps warm-cache discipline meaningful and
+prevents fixture generation from leaking into cell timing differences.
+
+## 2026-06-01 - K1 matrix memory layout
+
+Question: How should compiled implementations interpret the bars matrix passed
+from R?
+
+Alternatives considered: R-native column-major matrix storage; a separate flat
+row-major vector; a copied/transposed compiled-side layout.
+
+Choice: use R-native column-major matrix storage and have compiled
+implementations index as `bars[i + t * n_inst]` with zero-based internal
+indices.
+
+Rationale: R matrices are already column-major, so this avoids unnecessary
+copies and pins the cross-language wire format.
+
+## 2026-06-01 - K1 equity accumulation order
+
+Question: Should equity valuation use implementation-default `sum()` behavior,
+Kahan compensation, or a pinned naive loop?
+
+Alternatives considered: default language/library summation; Kahan-compensated
+inner products; naive left-to-right accumulation in instrument-index order.
+
+Choice: use naive left-to-right accumulation:
+`equity[t] = cash; for i in 0..(n_inst - 1) equity[t] += positions[i] * price[i, t]`.
+
+Rationale: A pinned accumulation order makes byte-identical equity parity
+feasible and reserves the `1e-8` tolerance for the named Kahan-vs-cumsum
+mechanism rather than avoidable implementation drift.

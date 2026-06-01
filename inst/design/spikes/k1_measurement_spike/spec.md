@@ -45,7 +45,12 @@ Each implementation receives a numeric bars matrix and returns an equity vector
 plus a fill event stream. The minimum shape is:
 
 - `bars`: numeric matrix, instruments in rows and pulses in columns, containing
-  close prices.
+  close prices. The wire format is R-native column-major matrix storage:
+  compiled implementations index the flat double buffer as
+  `bars[i + t * n_inst]`, with `i` and `t` zero-based internally. For timing,
+  the bars matrix is generated once per `(scale, run_date)` tuple and reused
+  across all reps and all `(boundary_variant, implementation)` cells at that
+  scale. Fixture generation is not included in wall timing.
 - `initial_cash`: scalar double, default `1e6`.
 - `equity`: numeric vector of length `n_pulses`.
 - `events`: typed fill stream with one row per fill.
@@ -66,10 +71,20 @@ The loop processes pulses in increasing column order. For each pulse:
 1. Read the current price column from `bars`.
 2. Resolve target positions through the selected strategy boundary.
 3. For each instrument with non-zero target delta, emit a zero-cost fill at the
-   current close price.
+   current close price. Fill quantities are fractional doubles with no integer
+   share rounding. The rebalance target quantity is
+   `target_notional / current_price`, and the fill quantity is
+   `target_quantity - current_position`.
 4. Update cash, positions, FIFO lots, realized PnL, and cost basis in a fixed
    instrument-index order.
-5. Write equity as `cash + sum(positions * current_prices)`.
+5. Write equity with naive left-to-right accumulation in instrument-index
+   order:
+
+```text
+equity[t] = cash
+for i in 0..(n_inst - 1):
+  equity[t] = equity[t] + positions[i] * price[i, t]
+```
 
 All implementations must use the same arithmetic order for state updates and
 equity valuation. No cost resolver, feature engine, runtime projection,
@@ -150,8 +165,16 @@ price[i, t] = 100 + 0.01 * i + 0.001 * t + deterministic_wave(i, t)
 ```
 
 where `deterministic_wave()` is a closed-form arithmetic function of integer
-indices. If pseudo-random fixture noise is added later, the exact generator and
-seed must be documented before timing runs.
+indices:
+
+```text
+deterministic_wave(i, t) = ((i * 7919 + t * 6311) mod 10000) / 100000.0
+```
+
+The formula uses one-based `i` and `t` values, 64-bit integer intermediates,
+modular arithmetic, and a single final floating-point division. It must not use
+transcendental functions. If pseudo-random fixture noise is added later, the
+exact generator and seed must be documented before timing runs.
 
 ## Parity Gates
 
