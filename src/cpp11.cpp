@@ -5,6 +5,34 @@
 #include "cpp11/declarations.hpp"
 #include <R_ext/Visibility.h>
 
+// k1-cpp.cpp
+cpp11::writable::list k1_cpp_fold_strat_R_handler_R(cpp11::doubles_matrix<> bars, double initial_cash, cpp11::function strategy_callback, cpp11::function output_handler, cpp11::sexp output_acc);
+extern "C" SEXP _ledgrcorespike_k1_cpp_fold_strat_R_handler_R(SEXP bars, SEXP initial_cash, SEXP strategy_callback, SEXP output_handler, SEXP output_acc) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(k1_cpp_fold_strat_R_handler_R(cpp11::as_cpp<cpp11::decay_t<cpp11::doubles_matrix<>>>(bars), cpp11::as_cpp<cpp11::decay_t<double>>(initial_cash), cpp11::as_cpp<cpp11::decay_t<cpp11::function>>(strategy_callback), cpp11::as_cpp<cpp11::decay_t<cpp11::function>>(output_handler), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(output_acc)));
+  END_CPP11
+}
+// k1-cpp.cpp
+cpp11::writable::list k1_cpp_fold_strat_R_handler_inline(cpp11::doubles_matrix<> bars, double initial_cash, cpp11::function strategy_callback);
+extern "C" SEXP _ledgrcorespike_k1_cpp_fold_strat_R_handler_inline(SEXP bars, SEXP initial_cash, SEXP strategy_callback) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(k1_cpp_fold_strat_R_handler_inline(cpp11::as_cpp<cpp11::decay_t<cpp11::doubles_matrix<>>>(bars), cpp11::as_cpp<cpp11::decay_t<double>>(initial_cash), cpp11::as_cpp<cpp11::decay_t<cpp11::function>>(strategy_callback)));
+  END_CPP11
+}
+// k1-cpp.cpp
+cpp11::writable::list k1_cpp_fold_strat_static_handler_R(cpp11::doubles_matrix<> bars, double initial_cash, cpp11::function output_handler, cpp11::sexp output_acc);
+extern "C" SEXP _ledgrcorespike_k1_cpp_fold_strat_static_handler_R(SEXP bars, SEXP initial_cash, SEXP output_handler, SEXP output_acc) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(k1_cpp_fold_strat_static_handler_R(cpp11::as_cpp<cpp11::decay_t<cpp11::doubles_matrix<>>>(bars), cpp11::as_cpp<cpp11::decay_t<double>>(initial_cash), cpp11::as_cpp<cpp11::decay_t<cpp11::function>>(output_handler), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(output_acc)));
+  END_CPP11
+}
+// k1-cpp.cpp
+cpp11::writable::list k1_cpp_fold_strat_static_handler_inline(cpp11::doubles_matrix<> bars, double initial_cash);
+extern "C" SEXP _ledgrcorespike_k1_cpp_fold_strat_static_handler_inline(SEXP bars, SEXP initial_cash) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(k1_cpp_fold_strat_static_handler_inline(cpp11::as_cpp<cpp11::decay_t<cpp11::doubles_matrix<>>>(bars), cpp11::as_cpp<cpp11::decay_t<double>>(initial_cash)));
+  END_CPP11
+}
 // ledgrcore-init.cpp
 std::string ledgrcore_spike_cpp_hello();
 extern "C" SEXP _ledgrcorespike_ledgrcore_spike_cpp_hello() {
@@ -15,7 +43,11 @@ extern "C" SEXP _ledgrcorespike_ledgrcore_spike_cpp_hello() {
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_ledgrcorespike_ledgrcore_spike_cpp_hello", (DL_FUNC) &_ledgrcorespike_ledgrcore_spike_cpp_hello, 0},
+    {"_ledgrcorespike_k1_cpp_fold_strat_R_handler_R",           (DL_FUNC) &_ledgrcorespike_k1_cpp_fold_strat_R_handler_R,           5},
+    {"_ledgrcorespike_k1_cpp_fold_strat_R_handler_inline",      (DL_FUNC) &_ledgrcorespike_k1_cpp_fold_strat_R_handler_inline,      3},
+    {"_ledgrcorespike_k1_cpp_fold_strat_static_handler_R",      (DL_FUNC) &_ledgrcorespike_k1_cpp_fold_strat_static_handler_R,      4},
+    {"_ledgrcorespike_k1_cpp_fold_strat_static_handler_inline", (DL_FUNC) &_ledgrcorespike_k1_cpp_fold_strat_static_handler_inline, 2},
+    {"_ledgrcorespike_ledgrcore_spike_cpp_hello",               (DL_FUNC) &_ledgrcorespike_ledgrcore_spike_cpp_hello,               0},
     {NULL, NULL, 0}
 };
 }

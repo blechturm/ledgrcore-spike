@@ -240,3 +240,18 @@ R-callback context.
 
 Rationale: Static compiled-ceiling cells should measure compiled loop work, not
 avoidable Rust allocation churn absent from the boundary being tested.
+
+## 2026-06-01 - Stage 4 C++ wrapper shape
+
+Question: Should cpp11-generated wrappers be edited directly to add the R
+strategy/output callback defaults?
+
+Alternatives considered: edit `R/cpp11.R` by hand; expose only the generated
+low-level wrappers; add separate public wrappers that call the registered cpp11
+symbols and construct the R callback accumulators.
+
+Choice: keep `R/cpp11.R` generated and add public wrappers in
+`R/k1_cpp_wrappers.R`.
+
+Rationale: `cpp11::cpp_register()` overwrites generated wrappers, so Stage 4
+needs a stable hand-authored wrapper layer for callback/accumulator setup.
