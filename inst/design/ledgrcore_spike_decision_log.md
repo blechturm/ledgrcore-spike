@@ -145,3 +145,49 @@ Choice: use naive left-to-right accumulation:
 Rationale: A pinned accumulation order makes byte-identical equity parity
 feasible and reserves the `1e-8` tolerance for the named Kahan-vs-cumsum
 mechanism rather than avoidable implementation drift.
+
+## 2026-06-01 - K1 epsilon and interval constants
+
+Question: Should the lot cleanup epsilon, short-creation guard, and rebalance
+interval remain inline implementation details in the R reference?
+
+Alternatives considered: leave `.Machine$double.eps`, `sqrt(.Machine$double.eps)`,
+and `5L` inline; name constants but derive epsilons from language runtime
+constants; name constants with explicit numeric literals.
+
+Choice: define `K1_REBALANCE_INTERVAL = 5L`,
+`K1_LOT_EMPTY_EPS = 2.2204460492503131e-16`, and
+`K1_SHORT_GUARD_EPS = 1.4901161193847656e-08`.
+
+Rationale: Rust and C++ parity should target exact numeric literals and a named
+interval rather than relying on language-specific epsilon symbols or duplicated
+magic values.
+
+## 2026-06-01 - K1 R-callback list surfaces
+
+Question: What R object shape should compiled R-callback variants construct at
+the strategy and output-handler boundaries?
+
+Alternatives considered: allow positional callback arguments; allow equivalent
+but implementation-specific lists; pin the same named list shape used by the R
+reference.
+
+Choice: pin the strategy context as an 8-field named list and the per-fill
+event callback as a 9-field named list, both in spec-defined order.
+
+Rationale: Constructing these lists is part of the R boundary cost being
+measured, and pinning the shape prevents Rust/C++ shortcuts that would make the
+boundary cells non-comparable.
+
+## 2026-06-01 - K1 event data-frame parity surface
+
+Question: What returned event object should Rust and C++ match for parity?
+
+Alternatives considered: allow any semantically equivalent object; allow tibble
+or list outputs; require the base R data-frame surface from the R reference.
+
+Choice: require a base R `data.frame` with the nine event columns in fixed
+order, fixed names, and fixed integer/double column types.
+
+Rationale: Stage 3 and Stage 4 parity uses `expect_identical()` for event
+streams, so the object surface must be exact rather than merely equivalent.

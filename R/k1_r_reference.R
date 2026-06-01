@@ -1,5 +1,9 @@
 # K1 measurement spike R reference implementation.
 
+K1_REBALANCE_INTERVAL <- 5L
+K1_LOT_EMPTY_EPS <- 2.2204460492503131e-16
+K1_SHORT_GUARD_EPS <- 1.4901161193847656e-08
+
 k1_make_fixture_bars <- function(scale = c("small", "large", "xlarge")) {
   scale <- match.arg(scale)
   n_inst <- switch(scale, small = 50L, large = 100L, xlarge = 1000L)
@@ -29,11 +33,11 @@ k1_static_targets <- function(pulse_idx, prices, cash, positions, initial_cash) 
   n_inst <- length(prices)
   active_count <- k1_active_count(n_inst)
 
-  if ((pulse_idx - 1L) %% 5L != 0L) {
+  if ((pulse_idx - 1L) %% K1_REBALANCE_INTERVAL != 0L) {
     return(positions)
   }
 
-  rebalance_idx <- (pulse_idx - 1L) %/% 5L
+  rebalance_idx <- (pulse_idx - 1L) %/% K1_REBALANCE_INTERVAL
   start <- if (rebalance_idx %% 2L == 0L) {
     1L
   } else {
@@ -72,13 +76,13 @@ k1_lot_apply_fill <- function(lot, quantity, price) {
       lot$quantity[1L] <- lot$quantity[1L] - take
       remaining <- remaining - take
 
-      if (lot$quantity[1L] <= .Machine$double.eps) {
+      if (lot$quantity[1L] <= K1_LOT_EMPTY_EPS) {
         lot$quantity <- lot$quantity[-1L]
         lot$cost_basis <- lot$cost_basis[-1L]
       }
     }
 
-    if (remaining > sqrt(.Machine$double.eps)) {
+    if (remaining > K1_SHORT_GUARD_EPS) {
       stop("K1 R reference does not support short lot creation", call. = FALSE)
     }
   }
@@ -153,7 +157,7 @@ k1_output_handler <- function(acc, event) {
 
 k1_event_capacity <- function(n_inst, n_pulses) {
   active_count <- k1_active_count(n_inst)
-  n_rebalances <- ((n_pulses - 1L) %/% 5L) + 1L
+  n_rebalances <- ((n_pulses - 1L) %/% K1_REBALANCE_INTERVAL) + 1L
   active_count + (n_rebalances - 1L) * active_count * 2L
 }
 
@@ -201,7 +205,7 @@ k1_r_fold_impl <- function(bars,
         prices = prices,
         cash = pulse_cash,
         positions = pulse_positions,
-        rebalance_due = (t - 1L) %% 5L == 0L,
+        rebalance_due = (t - 1L) %% K1_REBALANCE_INTERVAL == 0L,
         scale = as.character(n_inst),
         initial_cash = initial_cash
       ))

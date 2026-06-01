@@ -66,6 +66,12 @@ The loop owns the following state:
   quantity, double price, double cash delta, double position delta, double
   realized PnL, double cost basis after event, integer side code.
 
+The rebalance interval is the named constant `K1_REBALANCE_INTERVAL = 5L`.
+FIFO lot cleanup and short-creation guards use the named numeric literals
+`K1_LOT_EMPTY_EPS = 2.2204460492503131e-16` and
+`K1_SHORT_GUARD_EPS = 1.4901161193847656e-08`. Rust and C++ implementations
+must use the same values, not language-defined "equivalent" epsilon constants.
+
 The loop processes pulses in increasing column order. For each pulse:
 
 1. Read the current price column from `bars`.
@@ -123,8 +129,13 @@ The minimal strategy context contains:
 - `positions`: pulse-start positions vector.
 - `rebalance_due`: logical scalar.
 - `scale`: scale label.
+- `initial_cash`: scalar double.
 
 This context is deliberately smaller than ledgr's production `ctx` surface.
+Compiled R-callback variants construct the equivalent named R list once per
+pulse, in the order shown above, and call into R with that list. Building the
+list is part of the boundary cost being measured; positional shortcuts or
+compiled-only substitutes are not allowed for R-callback cells.
 
 ## Boundary Variants
 
@@ -141,9 +152,32 @@ The R output handler is a thin function called once per fill event. It appends
 the event to an R-owned accumulator. The inline event accumulator writes to
 preallocated typed vectors and materializes the R object only after the loop.
 
+The per-fill R output-handler callback receives a named R list with exactly
+these nine fields in this order:
+
+- `pulse_idx`: integer scalar.
+- `instrument_idx`: integer scalar.
+- `quantity`: double scalar.
+- `price`: double scalar.
+- `cash_delta`: double scalar.
+- `position_delta`: double scalar.
+- `realized_pnl`: double scalar.
+- `cost_basis_after`: double scalar.
+- `side_code`: integer scalar.
+
+Building this event list is part of the R output-handler boundary cost.
+Compiled R-handler variants must construct the same list shape per fill before
+calling into R.
+
 For compiled implementations, R-callback variants must cross the R interpreter
 boundary honestly. The callback path must not be replaced with compiled static
 logic.
+
+The returned `events` object is a base R `data.frame`, not a tibble or bare
+list. It has the same nine fields in the order above, with integer columns for
+`pulse_idx`, `instrument_idx`, and `side_code`, and double columns for all other
+fields. Cross-implementation event parity is checked against this column order,
+names, and types.
 
 ## Synthetic Fixture Grid
 
