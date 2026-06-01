@@ -24,3 +24,4 @@ Thumbs.db
 # Outputs
 dev/bench/results/*.csv
 !dev/bench/results/.gitkeep
+!dev/bench/results/k1_measurement_*.csv
