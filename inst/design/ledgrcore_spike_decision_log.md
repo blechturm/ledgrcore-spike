@@ -172,7 +172,7 @@ Alternatives considered: allow positional callback arguments; allow equivalent
 but implementation-specific lists; pin the same named list shape used by the R
 reference.
 
-Choice: pin the strategy context as an 8-field named list and the per-fill
+Choice: pin the strategy context as a 7-field named list and the per-fill
 event callback as a 9-field named list, both in spec-defined order.
 
 Rationale: Constructing these lists is part of the R boundary cost being
