@@ -185,15 +185,15 @@ fn k1_rust_fold_impl(
     for t in 0..n_pulses {
         let prices = column_prices(bars_slice, n_inst, t);
         let pulse_cash = cash;
-        let pulse_positions = positions.clone();
 
         let targets = match &strategy_boundary {
             StrategyBoundary::R(callback) => {
+                let pulse_positions = positions.clone();
                 let ctx = list!(
                     pulse_idx = (t + 1) as i32,
-                    prices = prices.clone(),
+                    prices = prices.to_vec(),
                     cash = pulse_cash,
-                    positions = pulse_positions.clone(),
+                    positions = pulse_positions,
                     rebalance_due = t % K1_REBALANCE_INTERVAL == 0,
                     scale = n_inst.to_string(),
                     initial_cash = initial_cash
@@ -206,7 +206,7 @@ fn k1_rust_fold_impl(
                     })?
             }
             StrategyBoundary::Static => {
-                k1_static_targets(t + 1, &prices, &pulse_positions, initial_cash)?
+                k1_static_targets(t + 1, &prices, &positions, initial_cash)?
             }
         };
 
@@ -271,9 +271,9 @@ fn k1_rust_fold_impl(
     Ok(list!(equity = equity, events = events).into())
 }
 
-fn column_prices(bars: &[f64], n_inst: usize, t: usize) -> Vec<f64> {
+fn column_prices(bars: &[f64], n_inst: usize, t: usize) -> &[f64] {
     let start = t * n_inst;
-    bars[start..start + n_inst].to_vec()
+    &bars[start..start + n_inst]
 }
 
 fn k1_active_count(n_inst: usize) -> Result<usize> {

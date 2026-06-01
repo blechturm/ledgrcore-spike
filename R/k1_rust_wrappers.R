@@ -15,13 +15,28 @@
 }
 
 .k1_rust_dll_path <- function() {
-  file.path(
-    .k1_repo_root(),
-    "src-rust",
-    "target",
-    "debug",
-    "ledgrcorespike_rust.dll"
+  root <- .k1_repo_root()
+  candidates <- c(
+    file.path(
+      root,
+      "src-rust",
+      "target",
+      "release",
+      "ledgrcorespike_rust.dll"
+    ),
+    file.path(
+      root,
+      "src-rust",
+      "target",
+      "debug",
+      "ledgrcorespike_rust.dll"
+    )
   )
+  existing <- candidates[file.exists(candidates)]
+  if (length(existing) > 0L) {
+    return(existing[[1L]])
+  }
+  candidates[[1L]]
 }
 
 .k1_rust_available <- function() {
@@ -39,7 +54,7 @@
   if (!file.exists(path)) {
     stop(
       "Rust extendr DLL not found at ", path,
-      ". Run `cargo +stable-gnu build` in `src-rust/` first.",
+      ". Run `cargo +stable-gnu build --release` in `src-rust/` first.",
       call. = FALSE
     )
   }

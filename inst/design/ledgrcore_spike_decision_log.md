@@ -202,9 +202,41 @@ under `src/rust/`; manually link the Rust static library into the package DLL;
 keep `src-rust/` and load the extendr development DLL for parity tests.
 
 Choice: keep `src-rust/`, build a Rust `cdylib` alongside the existing
-`staticlib`, and expose R wrappers that load
-`src-rust/target/debug/ledgrcorespike_rust.dll` during spike development.
+`staticlib`, and expose R wrappers that load the development Rust DLL during
+spike development.
 
 Rationale: The scaffold and spec explicitly place Rust code under `src-rust/`;
 using a development DLL preserves that layout and keeps Stage 3 focused on
 algorithm/parity rather than production package-linkage work.
+
+## 2026-06-01 - Stage 3 Rust measurement DLL profile
+
+Question: Which Rust build artifact should R wrappers load for parity and later
+measurement runs?
+
+Alternatives considered: keep loading `target/debug`; load only
+`target/release`; prefer `target/release` and fall back to `target/debug` for
+development parity when release has not been built.
+
+Choice: prefer `src-rust/target/release/ledgrcorespike_rust.dll`, with a debug
+fallback only for development availability.
+
+Rationale: Stage 5 measurements must not time an unoptimized Rust debug build;
+release-preferred lookup prevents a build-profile artifact from biasing the
+Rust verdict.
+
+## 2026-06-01 - Stage 3 Rust allocation symmetry
+
+Question: Should the Rust fold loop clone prices and positions on every pulse
+even for static strategy variants?
+
+Alternatives considered: keep eager per-pulse clones for implementation
+simplicity; clone only when constructing the R callback context; borrow the
+column-major bars slice and live positions for static strategy variants.
+
+Choice: borrow the current price column and live positions for static strategy
+variants, cloning only the vectors that must become owned R objects in the
+R-callback context.
+
+Rationale: Static compiled-ceiling cells should measure compiled loop work, not
+avoidable Rust allocation churn absent from the boundary being tested.
