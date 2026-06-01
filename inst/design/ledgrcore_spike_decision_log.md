@@ -191,3 +191,20 @@ order, fixed names, and fixed integer/double column types.
 
 Rationale: Stage 3 and Stage 4 parity uses `expect_identical()` for event
 streams, so the object surface must be exact rather than merely equivalent.
+
+## 2026-06-01 - Stage 3 Rust wrapper shape
+
+Question: Should Stage 3 migrate the scaffold to rextendr's default `src/rust/`
+package layout or keep the existing `src-rust/` spike layout?
+
+Alternatives considered: run `rextendr::use_extendr()` and move the Rust crate
+under `src/rust/`; manually link the Rust static library into the package DLL;
+keep `src-rust/` and load the extendr development DLL for parity tests.
+
+Choice: keep `src-rust/`, build a Rust `cdylib` alongside the existing
+`staticlib`, and expose R wrappers that load
+`src-rust/target/debug/ledgrcorespike_rust.dll` during spike development.
+
+Rationale: The scaffold and spec explicitly place Rust code under `src-rust/`;
+using a development DLL preserves that layout and keeps Stage 3 focused on
+algorithm/parity rather than production package-linkage work.
