@@ -255,3 +255,23 @@ Choice: keep `R/cpp11.R` generated and add public wrappers in
 
 Rationale: `cpp11::cpp_register()` overwrites generated wrappers, so Stage 4
 needs a stable hand-authored wrapper layer for callback/accumulator setup.
+
+## 2026-06-01 - K1 verdict shape after Stage 5 measurement
+
+Question: Does the Stage 5 measurement authorize a `ledgrcore` build, and if
+so which boundary shape and language should carry the recommendation?
+
+Alternatives considered: park `ledgrcore` because realistic R-output-handler
+cells are near 1x; authorize any compiled fold core because inline cells clear
+5x; authorize only the inline-output compiled-core shape and choose language by
+measured boundary cost.
+
+Choice: authorize build exploration only for a design that keeps fill event
+accumulation inside the compiled loop and materializes the event frame once.
+Recommend Rust as the measured runtime winner for that viable inline-output
+shape, while documenting cpp11's lower R-package integration friction.
+
+Rationale: At xlarge, `strat_static_handler_inline` measured Rust 151.20x and
+C++ 32.73x faster than R, and `strat_R_handler_inline` measured Rust 47.33x and
+C++ 10.14x faster than R. The R-output-handler cells stayed around 1x, proving
+that per-fill R callback traffic erases the compiled-core benefit.
